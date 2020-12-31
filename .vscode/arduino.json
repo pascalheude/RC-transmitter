@@ -1,0 +1,8 @@
+{
+    "board": "arduino:avr:pro",
+    "configuration": "cpu=8MHzatmega328",
+    "port": "COM3",
+    "sketch": "controller.ino",
+    "programmer": "AVRISP mkII",
+    "output": "./build"
+}
