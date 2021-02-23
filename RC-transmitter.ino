@@ -1,43 +1,44 @@
 /*****************************************************************/
 /*                                                               */
-/* RC Transmitter                                                */
+/* RC Transmitter : Arduino Pro Mini 3.3V 8 MHz                  */
 /*                                                               */
 /*****************************************************************/
 #include <SPI.h>
 #include <NRFLite.h>
+#include "standard.h"
 #include "mapping.h"
 
-// #define SPY
+#define SPY
 #define RADIO_ID 1
 #define DESTINATION_RADIO_ID 0
-#define TX_PERIOD 1000 // ms
+#define TX_PERIOD 200 // ms
 
 typedef struct
 {
-    uint32_t tx_time;
-    uint8_t from_radio_id;
-    uint8_t failed_tx_count;
-    uint8_t l_joystick_button;
-    uint8_t l_x_joystick;
-    uint8_t l_y_joystick;
-    uint8_t r_joystick_button;
-    uint8_t r_x_joystick;
-    uint8_t r_y_joystick;
-    uint8_t l_potentiometer;
-    uint8_t r_potentiometer;
-    uint8_t l_toggle_switch;
-    uint8_t r_toggle_switch;
-    uint8_t lo_push_button;
-    uint8_t li_push_button;
-    uint8_t ri_push_button;
-    uint8_t ro_push_button;
+    UNS32 tx_time;
+    UNS8 from_radio_id;
+    UNS8 failed_tx_count;
+    UNS8 l_joystick_button;
+    UNS8 l_x_joystick;
+    UNS8 l_y_joystick;
+    UNS8 r_joystick_button;
+    UNS8 r_x_joystick;
+    UNS8 r_y_joystick;
+    UNS8 l_potentiometer;
+    UNS8 r_potentiometer;
+    UNS8 l_toggle_switch;
+    UNS8 r_toggle_switch;
+    UNS8 lo_push_button;
+    UNS8 li_push_button;
+    UNS8 ri_push_button;
+    UNS8 ro_push_button;
 } T_radio_packet;
 
 NRFLite radio(Serial);
 T_radio_packet radio_data;
 
 #ifdef SPY
-void printSerial(uint8_t data, char *format, boolean last) {
+void printSerial(UNS8 data, char *format, BOOLEAN last) {
   char formated_data[4];
 
   sprintf(formated_data, format, data);
@@ -53,7 +54,7 @@ void printSerial(uint8_t data, char *format, boolean last) {
 
 void setup()
 {
-    boolean F_init_radio_ok;
+    BOOLEAN F_init_radio_ok;
 
 #ifdef SPY
     Serial.begin(115200);
@@ -79,18 +80,23 @@ void setup()
 #ifdef SPY
         Serial.println("Cannot communicate with radio");
 #endif // SPY
-        while (1); // Wait here forever.
+        while(true == true); // Wait here forever.
     }
+    else
+    {
+    }
+#ifdef SPY
     radio.printDetails();
+#endif // SPY
     radio_data.from_radio_id = RADIO_ID;
 }
 
 void loop()
 {
-    boolean F_init_radio_ok;
+    BOOLEAN F_send_radio_ok;
 
     radio_data.tx_time = millis();
-    // Convert the analog read value from 0 to 1023 into a uint8_t value from 0 to 255
+    // Convert the analog read value from 0 to 1023 into a UNS8 value from 0 to 255
     radio_data.l_x_joystick = map(analogRead(A1), 0, 1023, 0, 255);
     radio_data.l_y_joystick = map(analogRead(A0), 0, 1023, 0, 255);
     radio_data.r_x_joystick = map(analogRead(A2), 0, 1023, 0, 255);
@@ -113,26 +119,27 @@ void loop()
     // situations where performance is more important than reliability.
     //   radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::REQUIRE_ACK) // THE DEFAULT
     //   radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::NO_ACK)
-    F_init_radio_ok = radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::NO_ACK);
-    if (F_init_radio_ok == true)
+    F_send_radio_ok = radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::NO_ACK);
+    if (true)
+//    if (F_send_radio_ok == true) the return from radio.send is not set to true because NO_ACK parameter
     {
 #ifdef SPY
-    Serial.print(radio_data.tx_time);
-    Serial.print(",");
-    printSerial(input.l_x_joystick, "%03d", false);
-    printSerial(input.l_y_joystick, "%03d", false);
-    printSerial(input.r_x_joystick, "%03d", false);
-    printSerial(input.r_y_joystick, "%03d", false);
-    printSerial(input.l_potentiometer, "%03d", false);
-    printSerial(input.r_potentiometer, "%03d", false);
-    printSerial(input.l_joystick_button, "%1d", false);
-    printSerial(input.r_joystick_button, "%1d", false);
-    printSerial(input.l_toggle_switch, "%1d", false);
-    printSerial(input.r_toggle_switch, "%1d", false);
-    printSerial(input.lo_push_button, "%1d", false);
-    printSerial(input.li_push_button, "%1d", false);
-    printSerial(input.ri_push_button, "%1d", false);
-    printSerial(input.ro_push_button, "%1d", true);
+        Serial.print(radio_data.tx_time);
+        Serial.print(",");
+        printSerial(radio_data.l_x_joystick, "%03d", false);
+        printSerial(radio_data.l_y_joystick, "%03d", false);
+        printSerial(radio_data.r_x_joystick, "%03d", false);
+        printSerial(radio_data.r_y_joystick, "%03d", false);
+        printSerial(radio_data.l_potentiometer, "%03d", false);
+        printSerial(radio_data.r_potentiometer, "%03d", false);
+        printSerial(radio_data.l_joystick_button, "%1d", false);
+        printSerial(radio_data.r_joystick_button, "%1d", false);
+        printSerial(radio_data.l_toggle_switch, "%1d", false);
+        printSerial(radio_data.r_toggle_switch, "%1d", false);
+        printSerial(radio_data.lo_push_button, "%1d", false);
+        printSerial(radio_data.li_push_button, "%1d", false);
+        printSerial(radio_data.ri_push_button, "%1d", false);
+        printSerial(radio_data.ro_push_button, "%1d", true);
 #endif // SPY
     }
     else

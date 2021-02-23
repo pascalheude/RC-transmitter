@@ -25,8 +25,8 @@
 // RC Transmitter mapping using ARDUINO Mapping
 #define CE P5
 #define CSN P6
-#define L_JOYSTICK_BUTTON P1 // Left joystick button
-#define R_JOYSTICK_BUTTON P0 // Right joystick button
+#define L_JOYSTICK_BUTTON P0 // Left joystick button
+#define R_JOYSTICK_BUTTON P1 // Right joystick button
 #define L_TOGGLE_SWITCH P7   // Left toggle switch
 #define R_TOGGLE_SWITCH P4   // Right toggle switch
 #define LO_PUSH_BUTTON P8    // Left outboard button
