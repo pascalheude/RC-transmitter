@@ -19,11 +19,11 @@ typedef struct
     UNS8 from_radio_id;
     UNS8 failed_tx_count;
     UNS8 l_joystick_button;
-    UNS8 l_x_joystick;
-    UNS8 l_y_joystick;
+    UNS16 l_x_joystick;
+    UNS16 l_y_joystick;
     UNS8 r_joystick_button;
-    UNS8 r_x_joystick;
-    UNS8 r_y_joystick;
+    UNS16 r_x_joystick;
+    UNS16 r_y_joystick;
     UNS8 l_potentiometer;
     UNS8 r_potentiometer;
     UNS8 l_toggle_switch;
@@ -94,13 +94,16 @@ void setup()
 void loop()
 {
     BOOLEAN F_send_radio_ok;
+    UNS32 loop_timer;
 
+    loop_timer = micros() + 1000 * TX_PERIOD;
     radio_data.tx_time = millis();
+    // Read the analog  value [0 to 1023]
+    radio_data.l_x_joystick = analogRead(A1);
+    radio_data.l_y_joystick = analogRead(A0);
+    radio_data.r_x_joystick = analogRead(A2);
+    radio_data.r_y_joystick = analogRead(A3);
     // Convert the analog read value from 0 to 1023 into a UNS8 value from 0 to 255
-    radio_data.l_x_joystick = map(analogRead(A1), 0, 1023, 0, 255);
-    radio_data.l_y_joystick = map(analogRead(A0), 0, 1023, 0, 255);
-    radio_data.r_x_joystick = map(analogRead(A2), 0, 1023, 0, 255);
-    radio_data.r_y_joystick = map(analogRead(A3), 0, 1023, 0, 255);
     radio_data.l_potentiometer = map(analogRead(A7), 0, 1023, 0, 255);
     radio_data.r_potentiometer = map(analogRead(A6), 0, 1023, 0, 255);
     // Read all digital inputs
@@ -149,5 +152,7 @@ void loop()
 #endif // SPY
         radio_data.failed_tx_count++;
     }
-    delay(TX_PERIOD);
+    while(micros() < loop_timer)
+    {
+    }
 }
