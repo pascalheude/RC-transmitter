@@ -141,25 +141,20 @@ void loop()
     }
     else
     {
+        F_calibration_done = false;
     }
-    // If calibration performed, correct the analog values
-    if (F_calibration_done == true)
+    // Correct the analog values
+    for(i=L_X;i <= R_Y;i++)
     {
-        for(i=L_X;i <= R_Y;i++)
+        if (TAB_joystick[i] <= TAB_joystick_calib[i])
         {
-            if (TAB_joystick[i] <= TAB_joystick_calib[i])
-            {
-                TAB_joystick[i] = RADIO_MID * TAB_joystick[i] / TAB_joystick_calib[i];
-            }
-            else
-            {
-                TAB_joystick[i] = (RADIO_MID * TAB_joystick[i] / (ANALOG_MAX - TAB_joystick_calib[i])) +
-                                ANALOG_MAX - ((RADIO_MID * ANALOG_MAX) / (ANALOG_MAX - TAB_joystick_calib[i]));
-            }
+            TAB_joystick[i] = RADIO_MID * TAB_joystick[i] / TAB_joystick_calib[i];
         }
-    }
-    else
-    {
+        else
+        {
+            TAB_joystick[i] = (RADIO_MID * TAB_joystick[i] / (ANALOG_MAX - TAB_joystick_calib[i])) +
+                            ANALOG_MAX - ((RADIO_MID * ANALOG_MAX) / (ANALOG_MAX - TAB_joystick_calib[i]));
+        }
     }
     radio_data.l_x_joystick = (UNS8)TAB_joystick[L_X];
     radio_data.l_y_joystick = (UNS8)TAB_joystick[L_Y];
@@ -179,17 +174,13 @@ void loop()
 #ifdef SPY
         Serial.print(radio_data.tx_time);
         Serial.print(",");
-//        Serial.print(radio_data.l_x_joystick);
-        Serial.print(TAB_joystick[L_X], 0);
+        Serial.print(radio_data.l_x_joystick);
         Serial.print(",");
-//        Serial.print(radio_data.l_y_joystick);
-        Serial.print(TAB_joystick[L_Y], 0);
+        Serial.print(radio_data.l_y_joystick);
         Serial.print(",");
-//        Serial.print(radio_data.r_x_joystick);
-        Serial.print(TAB_joystick[R_X], 0);
+        Serial.print(radio_data.r_x_joystick);
         Serial.print(",");
-//        Serial.print(radio_data.r_y_joystick);
-        Serial.print(TAB_joystick[R_Y], 0);
+        Serial.print(radio_data.r_y_joystick);
         Serial.print(",");
         Serial.print(radio_data.l_potentiometer);
         Serial.print(",");
