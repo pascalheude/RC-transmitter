@@ -10,7 +10,7 @@
             "includePath": [
                 "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/include",
                 "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/src",
-                "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro16MHzatmega328/NRFLite/src",
+                "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/NRFLite/src",
                 "C:/Users/pasca/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "C:/Users/pasca/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/pasca/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
@@ -25,7 +25,7 @@
                 "path": [
                     "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/include",
                     "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/src",
-                    "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro16MHzatmega328/NRFLite/src",
+                    "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/NRFLite/src",
                     "C:/Users/pasca/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "C:/Users/pasca/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/pasca/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
@@ -39,7 +39,7 @@
             "defines": [
                 "PLATFORMIO=60106",
                 "ARDUINO_AVR_PRO",
-                "F_CPU=16000000L",
+                "F_CPU=8000000L",
                 "ARDUINO_ARCH_AVR",
                 "ARDUINO=10808",
                 "__AVR_ATmega328P__",

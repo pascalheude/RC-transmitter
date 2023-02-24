@@ -19,11 +19,11 @@ typedef struct
     UNS8 from_radio_id;
     UNS8 failed_tx_count;
     UNS8 l_joystick_button;
-    UNS16 l_x_joystick;
-    UNS16 l_y_joystick;
+    UNS8 l_x_joystick;
+    UNS8 l_y_joystick;
     UNS8 r_joystick_button;
-    UNS16 r_x_joystick;
-    UNS16 r_y_joystick;
+    UNS8 r_x_joystick;
+    UNS8 r_y_joystick;
     UNS8 l_potentiometer;
     UNS8 r_potentiometer;
     UNS8 l_toggle_switch;
@@ -34,28 +34,36 @@ typedef struct
     UNS8 ro_push_button;
 } T_radio_packet;
 
+static BOOLEAN F_calibration_done;
+static REAL32 TAB_joystick[4];
+static REAL32 TAB_joystick_calib[4];
+static REAL32 l_x_joystick_calib;
+static REAL32 l_y_joystick_calib;
+static REAL32 r_x_joystick_calib;
+static REAL32 r_y_joystick_calib;
 NRFLite radio(Serial);
 T_radio_packet radio_data;
 
-#ifdef SPY
-void printSerial(UNS8 data, char *format, BOOLEAN last) {
-  char formated_data[4];
-
-  sprintf(formated_data, format, data);
-  Serial.print(formated_data);
-  if (last) {
-    Serial.println();
-  }
-  else {
-    Serial.print(","); 
-  }
-}
-#endif // SPY
+#define L_X 0
+#define L_Y 1
+#define R_X 2
+#define R_Y 3
+#define ANALOG_MIN (REAL32)0.0f
+#define ANALOG_MID (REAL32)511.5f
+#define ANALOG_MAX (REAL32)1023.0f
+#define RADIO_MID (REAL32)127.5f
+#define RADIO_MAX (REAL32)255.0f
 
 void setup()
 {
     BOOLEAN F_init_radio_ok;
+    UNS8 i;
 
+    F_calibration_done = false;
+    for(i=L_X;i <= R_Y;i++)
+    {
+        TAB_joystick_calib[i] = ANALOG_MID;
+    }
 #ifdef SPY
     Serial.begin(115200);
 #endif // SPY
@@ -84,25 +92,26 @@ void setup()
     }
     else
     {
-    }
 #ifdef SPY
-    radio.printDetails();
+        // radio.printDetails();
 #endif // SPY
+    }
     radio_data.from_radio_id = RADIO_ID;
 }
 
 void loop()
 {
     BOOLEAN F_send_radio_ok;
+    UNS8 i;
     UNS32 loop_timer;
 
-    loop_timer = micros() + 1000 * TX_PERIOD;
+    loop_timer = millis() + TX_PERIOD;
     radio_data.tx_time = millis();
-    // Read the analog  value [0 to 1023]
-    radio_data.l_x_joystick = analogRead(A1);
-    radio_data.l_y_joystick = analogRead(A0);
-    radio_data.r_x_joystick = analogRead(A2);
-    radio_data.r_y_joystick = analogRead(A3);
+    // Read the analog inputs [0 - 1023]
+    TAB_joystick[L_X] = (REAL32)analogRead(A1);
+    TAB_joystick[L_Y] = (REAL32)analogRead(A0);
+    TAB_joystick[R_X] = (REAL32)analogRead(A2);
+    TAB_joystick[R_Y] = (REAL32)analogRead(A3);
     // Convert the analog read value from 0 to 1023 into a UNS8 value from 0 to 255
     radio_data.l_potentiometer = map(analogRead(A7), 0, 1023, 0, 255);
     radio_data.r_potentiometer = map(analogRead(A6), 0, 1023, 0, 255);
@@ -115,6 +124,47 @@ void loop()
     radio_data.li_push_button = digitalRead(LI_PUSH_BUTTON);
     radio_data.ri_push_button = digitalRead(RI_PUSH_BUTTON);
     radio_data.ro_push_button = digitalRead(RO_PUSH_BUTTON);
+    // Check for calibration request
+    if (radio_data.l_toggle_switch == 0)
+    {
+        if (F_calibration_done == false)
+        {
+            for(i=L_X;i <= R_Y;i++)
+            {
+                TAB_joystick_calib[i] = TAB_joystick[i];
+            }
+            F_calibration_done = true;
+        }
+        else
+        {
+        }
+    }
+    else
+    {
+    }
+    // If calibration performed, correct the analog values
+    if (F_calibration_done == true)
+    {
+        for(i=L_X;i <= R_Y;i++)
+        {
+            if (TAB_joystick[i] <= TAB_joystick_calib[i])
+            {
+                TAB_joystick[i] = RADIO_MID * TAB_joystick[i] / TAB_joystick_calib[i];
+            }
+            else
+            {
+                TAB_joystick[i] = (RADIO_MID * TAB_joystick[i] / (ANALOG_MAX - TAB_joystick_calib[i])) +
+                                ANALOG_MAX - ((RADIO_MID * ANALOG_MAX) / (ANALOG_MAX - TAB_joystick_calib[i]));
+            }
+        }
+    }
+    else
+    {
+    }
+    radio_data.l_x_joystick = (UNS8)TAB_joystick[L_X];
+    radio_data.l_y_joystick = (UNS8)TAB_joystick[L_Y];
+    radio_data.r_x_joystick = (UNS8)TAB_joystick[R_X];
+    radio_data.r_y_joystick = (UNS8)TAB_joystick[R_Y];
     // By default, 'send' transmits data and waits for an acknowledgement.  If no acknowledgement is received,
     // it will try again up to 16 times.  This retry logic is built into the radio hardware itself, so it is very fast.
     // You can also perform a NO_ACK send that does not request an acknowledgement.  In this situation, the data packet
@@ -124,25 +174,42 @@ void loop()
     //   radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::NO_ACK)
     F_send_radio_ok = radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::NO_ACK);
     if (true)
-//    if (F_send_radio_ok == true) the return from radio.send is not set to true because NO_ACK parameter
+//    if (F_send_radio_ok == true) // When using NO_ACK parameter, the function radio.send always returns false
     {
 #ifdef SPY
         Serial.print(radio_data.tx_time);
         Serial.print(",");
-        printSerial(radio_data.l_x_joystick, "%03d", false);
-        printSerial(radio_data.l_y_joystick, "%03d", false);
-        printSerial(radio_data.r_x_joystick, "%03d", false);
-        printSerial(radio_data.r_y_joystick, "%03d", false);
-        printSerial(radio_data.l_potentiometer, "%03d", false);
-        printSerial(radio_data.r_potentiometer, "%03d", false);
-        printSerial(radio_data.l_joystick_button, "%1d", false);
-        printSerial(radio_data.r_joystick_button, "%1d", false);
-        printSerial(radio_data.l_toggle_switch, "%1d", false);
-        printSerial(radio_data.r_toggle_switch, "%1d", false);
-        printSerial(radio_data.lo_push_button, "%1d", false);
-        printSerial(radio_data.li_push_button, "%1d", false);
-        printSerial(radio_data.ri_push_button, "%1d", false);
-        printSerial(radio_data.ro_push_button, "%1d", true);
+//        Serial.print(radio_data.l_x_joystick);
+        Serial.print(TAB_joystick[L_X], 0);
+        Serial.print(",");
+//        Serial.print(radio_data.l_y_joystick);
+        Serial.print(TAB_joystick[L_Y], 0);
+        Serial.print(",");
+//        Serial.print(radio_data.r_x_joystick);
+        Serial.print(TAB_joystick[R_X], 0);
+        Serial.print(",");
+//        Serial.print(radio_data.r_y_joystick);
+        Serial.print(TAB_joystick[R_Y], 0);
+        Serial.print(",");
+        Serial.print(radio_data.l_potentiometer);
+        Serial.print(",");
+        Serial.print(radio_data.r_potentiometer);
+        Serial.print(",");
+        Serial.print(radio_data.l_joystick_button);
+        Serial.print(",");
+        Serial.print(radio_data.r_joystick_button);
+        Serial.print(",");
+        Serial.print(radio_data.l_toggle_switch);
+        Serial.print(",");
+        Serial.print(radio_data.r_toggle_switch);
+        Serial.print(",");
+        Serial.print(radio_data.lo_push_button);
+        Serial.print(",");
+        Serial.print(radio_data.li_push_button);
+        Serial.print(",");
+        Serial.print(radio_data.ri_push_button);
+        Serial.print(",");
+        Serial.println(radio_data.ro_push_button);
 #endif // SPY
     }
     else
@@ -152,7 +219,7 @@ void loop()
 #endif // SPY
         radio_data.failed_tx_count++;
     }
-    while(micros() < loop_timer)
+    while(millis() < loop_timer)
     {
     }
 }
