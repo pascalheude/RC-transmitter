@@ -8,10 +8,10 @@
 #include "standard.h"
 #include "mapping.h"
 
-#define SPY
+//#define SPY
 #define RADIO_ID 1
 #define DESTINATION_RADIO_ID 0
-#define TX_PERIOD 200 // ms
+#define TX_PERIOD 100 // ms
 
 typedef struct
 {
