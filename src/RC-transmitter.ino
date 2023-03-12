@@ -9,6 +9,7 @@
 #include "mapping.h"
 
 //#define SPY
+#define SPY_PLOTTER
 #define RADIO_ID 1
 #define DESTINATION_RADIO_ID 0
 #define TX_PERIOD 100 // ms
@@ -64,9 +65,9 @@ void setup()
     {
         TAB_joystick_calib[i] = ANALOG_MID;
     }
-#ifdef SPY
+#if defined(SPY) || defined(SPY_PLOTTER)
     Serial.begin(115200);
-#endif // SPY
+#endif // SPY || SPY_PLOTTER
     pinMode(L_JOYSTICK_BUTTON, INPUT_PULLUP);
     pinMode(R_JOYSTICK_BUTTON, INPUT_PULLUP);
     pinMode(L_TOGGLE_SWITCH, INPUT_PULLUP);
@@ -85,16 +86,16 @@ void setup()
     F_init_radio_ok = radio.init(RADIO_ID, CE, CSN);
     if (F_init_radio_ok = false)
     {
-#ifdef SPY
+#if defined(SPY) || defined(SPY_PLOTTER)
         Serial.println("Cannot communicate with radio");
-#endif // SPY
+#endif // SPY || SPY_PLOTTER
         while(true == true); // Wait here forever.
     }
     else
     {
-#ifdef SPY
+#if defined(SPY) || defined(SPY_PLOTTER)
         // radio.printDetails();
-#endif // SPY
+#endif // SPY || SPY_PLOTTER
     }
     radio_data.from_radio_id = RADIO_ID;
 }
@@ -202,12 +203,24 @@ void loop()
         Serial.print(",");
         Serial.println(radio_data.ro_push_button);
 #endif // SPY
+#ifdef SPY_PLOTTER
+        Serial.print(">Tx time:");
+        Serial.println(radio_data.tx_time);
+        Serial.print(">Yaw:");
+        Serial.println(radio_data.l_x_joystick);
+        Serial.print(">Throttle:");
+        Serial.println(radio_data.l_y_joystick);
+        Serial.print(">Roll:");
+        Serial.println(radio_data.r_x_joystick);
+        Serial.print(">Pitch:");
+        Serial.println(radio_data.r_y_joystick);
+#endif // SPY_PLOTTER
     }
     else
     {
-#ifdef SPY
+#if defined(SPY) || defined(SPY_PLOTTER)
         Serial.println("...Failed");
-#endif // SPY
+#endif // SPY || SPY_PLOTTER
         radio_data.failed_tx_count++;
     }
     while(millis() < loop_timer)
