@@ -9,7 +9,7 @@
 #include "mapping.h"
 
 //#define SPY
-#define SPY_PLOTTER
+//#define SPY_PLOTTER
 #define RADIO_ID 1
 #define DESTINATION_RADIO_ID 0
 #define TX_PERIOD 100 // ms
