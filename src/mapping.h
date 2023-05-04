@@ -33,4 +33,4 @@
 #define LI_PUSH_BUTTON P9    // Left inboard button
 #define RI_PUSH_BUTTON P2    // Right inboard button
 #define RO_PUSH_BUTTON P3    // Left outboard button
-#define LED P13
+#define LED P10

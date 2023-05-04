@@ -9,7 +9,7 @@
 #include "mapping.h"
 
 //#define SPY
-//#define SPY_PLOTTER
+#define SPY_PLOTTER
 #define RADIO_ID 1
 #define DESTINATION_RADIO_ID 0
 #define TX_PERIOD 100 // ms
@@ -36,13 +36,15 @@ typedef struct
 } T_radio_packet;
 
 static BOOLEAN F_calibration_done;
+static BOOLEAN F_led_high;
+static UNS8 CPT_PIT;
 static REAL32 TAB_joystick[4];
 static REAL32 TAB_joystick_calib[4];
 static REAL32 l_x_joystick_calib;
 static REAL32 l_y_joystick_calib;
 static REAL32 r_x_joystick_calib;
 static REAL32 r_y_joystick_calib;
-NRFLite radio(Serial);
+NRFLite radio;
 T_radio_packet radio_data;
 
 #define L_X 0
@@ -61,6 +63,8 @@ void setup()
     UNS8 i;
 
     F_calibration_done = false;
+    F_led_high = false;
+    CPT_PIT = 1;
     for(i=L_X;i <= R_Y;i++)
     {
         TAB_joystick_calib[i] = ANALOG_MID;
@@ -76,6 +80,8 @@ void setup()
     pinMode(LI_PUSH_BUTTON, INPUT_PULLUP);
     pinMode(RI_PUSH_BUTTON, INPUT_PULLUP);
     pinMode(RO_PUSH_BUTTON, INPUT_PULLUP);
+    pinMode(LED, OUTPUT);
+    digitalWrite(LED, LOW);
     // By default, 'init' configures the radio to use a 2MBPS bitrate on channel 100 (channels 0-125 are valid).
     // Both the RX and TX radios must have the same bitrate and channel to communicate with each other.
     // You can run the 'ChannelScanner' example to help select the best channel for your environment.
@@ -225,5 +231,23 @@ void loop()
     }
     while(millis() < loop_timer)
     {
+    }
+    if (CPT_PIT >= 5)
+    {
+        CPT_PIT = 1;
+        if (F_led_high)
+        {
+            F_led_high = false;
+            digitalWrite(LED, LOW);
+        }
+        else
+        {
+            F_led_high = true;
+            digitalWrite(LED, HIGH);
+        }
+    }
+    else
+    {
+        CPT_PIT++;
     }
 }
