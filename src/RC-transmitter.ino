@@ -1,10 +1,12 @@
 /*****************************************************************/
 /*                                                               */
-/* RC Transmitter : Arduino Pro Mini 3.3V 8 MHz                  */
+/* RC Transmitter : Arduino Pro Mini 5V 8MHz                     */
 /*                                                               */
 /*****************************************************************/
 #include <SPI.h>
-#include <NRFLite.h>
+//#include <NRFLite.h>
+#include <RF24.h>
+#include "printf.h"
 #include "standard.h"
 #include "mapping.h"
 
@@ -44,8 +46,15 @@ static REAL32 l_x_joystick_calib;
 static REAL32 l_y_joystick_calib;
 static REAL32 r_x_joystick_calib;
 static REAL32 r_y_joystick_calib;
+#ifdef __RF24_H__
+RF24 radio(CE, CSN, 1000000);
+#endif
+#ifdef _NRFLite_h_
 NRFLite radio;
+#endif
 T_radio_packet radio_data;
+
+const unsigned char address[6] = "PIPE1";
 
 #define L_X 0
 #define L_Y 1
@@ -59,7 +68,9 @@ T_radio_packet radio_data;
 
 void setup()
 {
+#ifdef _NRFLite_h_
     BOOLEAN F_init_radio_ok;
+#endif
     UNS8 i;
 
     F_calibration_done = false;
@@ -71,6 +82,7 @@ void setup()
     }
 #if defined(SPY) || defined(SPY_PLOTTER)
     Serial.begin(115200);
+    printf_begin(); // To allow the use of printDetails of RF24 library
 #endif // SPY || SPY_PLOTTER
     pinMode(L_JOYSTICK_BUTTON, INPUT_PULLUP);
     pinMode(R_JOYSTICK_BUTTON, INPUT_PULLUP);
@@ -89,18 +101,32 @@ void setup()
     //   radio.init(RADIO_ID, PINradio_CE, PINradio_CSN, NRFLite::BITRATE2MBPS, 100) // THE DEFAULT
     //   radio.init(RADIO_ID, PINradio_CE, PINradio_CSN, NRFLite::BITRATE1MBPS, 75)
     //   radio.init(RADIO_ID, PINradio_CE, PINradio_CSN, NRFLite::BITRATE250KBPS, 0)
+#ifdef _NRFLite_h_
     F_init_radio_ok = radio.init(RADIO_ID, CE, CSN);
-    if (F_init_radio_ok = false)
+    if (F_init_radio_ok == false)
+#endif
+#ifdef __RF24_H__
+    radio.begin();
+    radio.setChannel(125);
+    radio.setPALevel(RF24_PA_LOW);
+    radio.setDataRate(RF24_250KBPS);
+    radio.setAddressWidth(5);
+    radio.setAutoAck(false);
+    radio.openWritingPipe(address);
+    radio.stopListening();
+    if (radio.isChipConnected() == false)
+#endif
     {
 #if defined(SPY) || defined(SPY_PLOTTER)
         Serial.println("Cannot communicate with radio");
+        radio.printDetails();
 #endif // SPY || SPY_PLOTTER
+        digitalWrite(LED, HIGH);
         while(true == true); // Wait here forever.
     }
     else
     {
 #if defined(SPY) || defined(SPY_PLOTTER)
-        // radio.printDetails();
 #endif // SPY || SPY_PLOTTER
     }
     radio_data.from_radio_id = RADIO_ID;
@@ -174,9 +200,15 @@ void loop()
     // situations where performance is more important than reliability.
     //   radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::REQUIRE_ACK) // THE DEFAULT
     //   radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::NO_ACK)
+#ifdef __RF24_H__
+    // When ACK is disabled, the function radio.write returns true
+    F_send_radio_ok = radio.write(&radio_data, sizeof(radio_data));
+#endif
+#ifdef _NRFLite_h_
+    // When using NO_ACK parameter, the function radio.send always returns false
     F_send_radio_ok = radio.send(DESTINATION_RADIO_ID, &radio_data, sizeof(radio_data), NRFLite::NO_ACK);
-    if (true)
-//    if (F_send_radio_ok == true) // When using NO_ACK parameter, the function radio.send always returns false
+#endif
+    if (F_send_radio_ok == true)
     {
 #ifdef SPY
         Serial.print(radio_data.tx_time);
@@ -225,7 +257,7 @@ void loop()
     else
     {
 #if defined(SPY) || defined(SPY_PLOTTER)
-        Serial.println("...Failed");
+        Serial.println("No ACK from radio");
 #endif // SPY || SPY_PLOTTER
         radio_data.failed_tx_count++;
     }
