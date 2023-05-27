@@ -12,9 +12,10 @@
 
 //#define SPY
 #define SPY_PLOTTER
+//#define CPU_LOAD
 #define RADIO_ID 1
 #define DESTINATION_RADIO_ID 0
-#define TX_PERIOD 100 // ms
+#define PIT_PERIOD 100 // ms
 
 typedef struct
 {
@@ -39,7 +40,8 @@ typedef struct
 
 static BOOLEAN F_calibration_done;
 static BOOLEAN F_led_high;
-static UNS8 CPT_PIT;
+static UNS32 PIT_number;
+static UNS32 LED_time;
 static REAL32 TAB_joystick[4];
 static REAL32 TAB_joystick_calib[4];
 static REAL32 l_x_joystick_calib;
@@ -75,7 +77,8 @@ void setup()
 
     F_calibration_done = false;
     F_led_high = false;
-    CPT_PIT = 1;
+    PIT_number = 0;
+    LED_time = 0;
     for(i=L_X;i <= R_Y;i++)
     {
         TAB_joystick_calib[i] = ANALOG_MID;
@@ -107,11 +110,13 @@ void setup()
 #endif
 #ifdef __RF24_H__
     radio.begin();
-    radio.setChannel(125);
-    radio.setPALevel(RF24_PA_LOW);
-    radio.setDataRate(RF24_250KBPS);
-    radio.setAddressWidth(5);
-    radio.setAutoAck(false);
+    //radio.setChannel(61);
+    radio.setPALevel(RF24_PA_MIN);
+    radio.setDataRate(RF24_1MBPS);
+    //radio.setAddressWidth(5);
+    //radio.setAutoAck(true);
+    //radio.setRetries(15, 15);
+    radio.setPayloadSize(sizeof(radio_data));
     radio.openWritingPipe(address);
     radio.stopListening();
     if (radio.isChipConnected() == false)
@@ -138,8 +143,30 @@ void loop()
     UNS8 i;
     UNS32 loop_timer;
 
-    loop_timer = millis() + TX_PERIOD;
-    radio_data.tx_time = millis();
+#ifdef CPU_LOAD
+    digitalWrite(LED, HIGH);
+#endif
+    loop_timer = millis() + PIT_PERIOD;
+#ifndef CPU_LOAD
+   if ((PIT_number - LED_time) >= (500/PIT_PERIOD))
+    {
+        LED_time = PIT_number;
+        if (F_led_high)
+        {
+            F_led_high = false;
+            digitalWrite(LED, LOW);
+        }
+        else
+        {
+            F_led_high = true;
+            digitalWrite(LED, HIGH);
+        }
+    }
+    else
+    {
+    }
+#endif
+    radio_data.tx_time = PIT_number;
     // Read the analog inputs [0 - 1023]
     TAB_joystick[L_X] = (REAL32)analogRead(A1);
     TAB_joystick[L_Y] = (REAL32)analogRead(A0);
@@ -261,25 +288,11 @@ void loop()
 #endif // SPY || SPY_PLOTTER
         radio_data.failed_tx_count++;
     }
+    PIT_number++;
+#ifdef CPU_LOAD
+    digitalWrite(LED, LOW);
+#endif
     while(millis() < loop_timer)
     {
-    }
-    if (CPT_PIT >= 5)
-    {
-        CPT_PIT = 1;
-        if (F_led_high)
-        {
-            F_led_high = false;
-            digitalWrite(LED, LOW);
-        }
-        else
-        {
-            F_led_high = true;
-            digitalWrite(LED, HIGH);
-        }
-    }
-    else
-    {
-        CPT_PIT++;
     }
 }

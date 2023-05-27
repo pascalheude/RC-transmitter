@@ -8,11 +8,11 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/include",
-                "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/src",
-                "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24",
-                "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24/utility",
-                "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/NRFLite/src",
+                "c:/Users/pasca/Drone/RC-transmitter/include",
+                "c:/Users/pasca/Drone/RC-transmitter/src",
+                "c:/Users/pasca/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24",
+                "c:/Users/pasca/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24/utility",
+                "c:/Users/pasca/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/NRFLite/src",
                 "C:/Users/pasca/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "C:/Users/pasca/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/pasca/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
@@ -25,11 +25,11 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/include",
-                    "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/src",
-                    "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24",
-                    "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24/utility",
-                    "c:/Users/pasca/OneDrive/Bureau/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/NRFLite/src",
+                    "c:/Users/pasca/Drone/RC-transmitter/include",
+                    "c:/Users/pasca/Drone/RC-transmitter/src",
+                    "c:/Users/pasca/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24",
+                    "c:/Users/pasca/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/RF24/utility",
+                    "c:/Users/pasca/Drone/RC-transmitter/.pio/libdeps/pro8MHzatmega328/NRFLite/src",
                     "C:/Users/pasca/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "C:/Users/pasca/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/pasca/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
